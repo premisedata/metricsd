@@ -1,0 +1,4 @@
+#!/bin/bash -eux
+ROOT=$(dirname "$0")/..
+
+CONFIG=$ROOT/config/conf.js java -jar target/metricsd-0.5.0-jar-with-dependencies.jar "$@"

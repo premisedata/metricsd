@@ -21,7 +21,8 @@ class MetricsServiceHandler(prefix: String)
   val METER_VALUE_METRIC_TYPE = "mn"
   val TIMER_METRIC_TYPE = "ms"
 
-  val MetricMatcher = new Regex("""([^:]+)(:((-?\d+|delete)?(\|((\w+)(\|@(\d+\.\d+))?)?)?)?)?""")
+  val MetricMatcher     = new Regex("""([^:]+)(:((-?\d+|delete)?(\|((\w+)(\|@(\d+\.\d+))?)?)?)?)?""")
+  val MetricNameMatcher = new Regex("""([^.]+)[.]([^.]+)[.](.*)""")
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val msg = e.getMessage.asInstanceOf[String]
@@ -34,7 +35,8 @@ class MetricsServiceHandler(prefix: String)
         val MetricMatcher(_metricName, _, _, _value, _, _, _metricType, _, _sampleRate) = line
 
         // clean up the metric name
-        val metricName = _metricName.replaceAll("\\s+", "_").replaceAll("\\/", "-").replaceAll("[^a-zA-Z_\\-0-9\\.]", "")
+        val _metricName2 = _metricName.replaceAll("\\s+", "_").replaceAll("\\/", "-").replaceAll("[^a-zA-Z_\\-0-9\\.]", "")
+        val MetricNameMatcher(metricGroup, metricGroup2, metricName) = _metricName2
 
         val metricType = if ((_value == null || _value.equals("delete")) && _metricType == null) {
           METER_METRIC_TYPE
@@ -61,16 +63,16 @@ class MetricsServiceHandler(prefix: String)
         if (deleteMetric) {
           val name: MetricName = metricType match {
             case COUNTER_METRIC_TYPE =>
-              new MetricName("metrics", "counter", metricName)
+              new MetricName(metricGroup, metricGroup2, metricName)
 
             case GAUGE_METRIC_TYPE =>
-              new MetricName("metrics", "gauge", metricName)
+              new MetricName(metricGroup, metricGroup2, metricName)
 
             case HISTOGRAM_METRIC_TYPE | TIMER_METRIC_TYPE =>
-              new MetricName("metrics", "histogram", metricName)
+              new MetricName(metricGroup, metricGroup2, metricName)
 
             case METER_METRIC_TYPE | METER_VALUE_METRIC_TYPE =>
-              new MetricName("metrics", "meter", metricName)
+              new MetricName(metricGroup, metricGroup2, metricName)
           }
 
           log.debug("Deleting metric '%s'", name)
@@ -79,33 +81,31 @@ class MetricsServiceHandler(prefix: String)
           metricType match {
             case COUNTER_METRIC_TYPE =>
               log.debug("Incrementing counter '%s' with %d at sample rate %f (%d)", metricName, value, sampleRate, round(value * 1 / sampleRate))
-              Metrics.newCounter(new MetricName("metrics", "counter", metricName)).inc(round(value * 1 / sampleRate))
+              Metrics.newCounter(new MetricName(metricGroup, metricGroup2, metricName)).inc(round(value * 1 / sampleRate))
 
             case GAUGE_METRIC_TYPE =>
               log.debug("Updating gauge '%s' with %d", metricName, value)
               // use a counter to simulate a gauge
-              val counter = Metrics.newCounter(new MetricName("metrics", "gauge", metricName))
+              val counter = Metrics.newCounter(new MetricName(metricGroup, metricGroup2, metricName))
               counter.clear()
               counter.inc(value)
 
             case HISTOGRAM_METRIC_TYPE | TIMER_METRIC_TYPE =>
               log.debug("Updating histogram '%s' with %d", metricName, value)
               // note: assumes that values have been normalized to integers
-              Metrics.newHistogram(new MetricName("metrics", "histogram", metricName), true).update(value)
+              Metrics.newHistogram(new MetricName(metricGroup, metricGroup2 , metricName), true).update(value)
 
             case METER_METRIC_TYPE =>
               log.debug("Marking meter '%s'", metricName)
-              Metrics.newMeter(new MetricName("metrics", "meter", metricName), "samples", TimeUnit.SECONDS).mark()
+              Metrics.newMeter(new MetricName(metricGroup, metricGroup2, metricName), "samples", TimeUnit.SECONDS).mark()
 
             case METER_VALUE_METRIC_TYPE =>
               log.debug("Marking meter '%s' with %d", metricName, value)
-              Metrics.newMeter(new MetricName("metrics", "meter", metricName), "samples", TimeUnit.SECONDS).mark(value)
+              Metrics.newMeter(new MetricName(metricGroup, metricGroup2, metricName), "samples", TimeUnit.SECONDS).mark(value)
 
             case x: String =>
               log.error("Unknown metric type: %s", x)
           }
-
-          Metrics.newMeter(new MetricName(prefix, "meter", "samples"), "samples", TimeUnit.SECONDS).mark()
         }
     }
   }
