@@ -1,0 +1,8 @@
+#!/bin/bash -eu
+
+bin="`dirname "$0"`"
+cp="`"$bin"/classpath`"
+config="`"$bin"/config`"
+configs=(); while read line; do [ -n "$line" ] && configs+=("$line"); done <"$config/jvm.config"
+
+exec java -cp "$cp" "${configs[@]}" ${JAVA_OPTS:-} "$@"

@@ -1,0 +1,10 @@
+#!/bin/bash -eu
+
+bin="`dirname "$0"`"
+config="`"$bin"/config`"
+
+classes="$bin/../target/classes"
+resources="$bin/../src/main/resources"
+jar="`/bin/ls "$bin"/../target/*-selfcontained.jar | tail -1`"
+
+echo "$config:$resources:$classes:$jar${CLASSPATH:+:$CLASSPATH}"
