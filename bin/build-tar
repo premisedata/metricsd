@@ -1,0 +1,10 @@
+#!/bin/bash -eux
+target="$1"
+PROJECT_ROOT=$(dirname "$0")/../
+
+cd "$PROJECT_ROOT"
+
+# h follows simlinks
+tar hczf "$target" \
+  "bin"            \
+  "target"         \
