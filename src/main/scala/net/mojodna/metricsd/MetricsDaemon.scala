@@ -9,15 +9,18 @@ import net.mojodna.metricsd.server.{MetricsServer, ManagementServer}
 
 class MetricsDaemon(config: Configuration) extends Logging {
   def apply() = {
-    if (config("debug").or(false)) {
-      ConsoleReporter.enable(10, TimeUnit.SECONDS)
-    }
 
     val flushInterval = config("graphite.flushInterval").or(10)
     val graphiteHost = config("graphite.host").or("localhost")
     val graphitePort = config("graphite.port").or(2003)
-    log.info("Flushing to %s:%d every %ds", graphiteHost, graphitePort, flushInterval)
 
+    if (config("debug").or(false)) {
+      ConsoleReporter.enable(10, TimeUnit.SECONDS)
+    } else {
+      ConsoleReporter.enable(flushInterval, TimeUnit.SECONDS)
+    }
+
+    log.info("Flushing to %s:%d every %ds", graphiteHost, graphitePort, flushInterval)
     GraphiteReporter.enable(
       flushInterval,
       TimeUnit.SECONDS,
