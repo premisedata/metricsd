@@ -68,7 +68,10 @@ class MetricsServiceHandler(prefix: String)
             case GAUGE_METRIC_TYPE =>
               new MetricName(metricGroup, metricGroup2, metricName)
 
-            case HISTOGRAM_METRIC_TYPE | TIMER_METRIC_TYPE =>
+            case TIMER_METRIC_TYPE =>
+              new MetricName(metricGroup, metricGroup2, metricName)
+
+            case HISTOGRAM_METRIC_TYPE =>
               new MetricName(metricGroup, metricGroup2, metricName)
 
             case METER_METRIC_TYPE | METER_VALUE_METRIC_TYPE =>
@@ -90,7 +93,11 @@ class MetricsServiceHandler(prefix: String)
               counter.clear()
               counter.inc(value)
 
-            case HISTOGRAM_METRIC_TYPE | TIMER_METRIC_TYPE =>
+            case TIMER_METRIC_TYPE =>
+              log.debug("Updating timer '%s' with %d", metricName, value)
+              Metrics.newTimer(new MetricName(metricGroup, metricGroup2 , metricName), TimeUnit.MILLISECONDS, TimeUnit.SECONDS).update(value, TimeUnit.MILLISECONDS)
+
+            case HISTOGRAM_METRIC_TYPE =>
               log.debug("Updating histogram '%s' with %d", metricName, value)
               Metrics.newHistogram(new MetricName(metricGroup, metricGroup2 , metricName), true).update(value)
 
