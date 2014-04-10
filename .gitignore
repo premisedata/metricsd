@@ -1,12 +1,39 @@
-target
-project/boot
-project/target
-dist
-log
-debian/metricsd
-debian/metricsd.debhelper.log
-metricsd.jar
+# mvny
+pom.yaml.xml
+pom.xml
 
-*.iml
-config
+# General
+*.jar
+*.class
+*.log
+*.tar.gz
+
+# mvn
+target/
+
+# sbt
+target/
+dist/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# IntelliJ
 .idea
+*.iml
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# py
+*.pyc
+build/
+dist/
+*.egg-info/
+
+# vim undo
+.*.un~
+
+*.DS_Store
