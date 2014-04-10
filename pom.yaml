@@ -3,7 +3,7 @@ project:
 
   groupId:    'net.mojodna'
   artifactId: 'metricsd'
-  version:    '0.5.3'
+  version:    '0.5.4-SNAPSHOT'
 
   scm:
     connection:          'scm:git:ssh://git@github.com:premisedata/metricsd.git'
