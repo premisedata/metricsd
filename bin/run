@@ -2,4 +2,4 @@
 BIN=$(dirname "$0")
 ROOT=$BIN/..
 
-CONFIG=$ROOT/config/conf.js exec "$BIN/java" net.mojodna.metricsd.MetricsDaemon "$@"
+CONFIG=$ROOT/config/config.json exec "$BIN/java" net.mojodna.metricsd.MetricsDaemon "$@"
